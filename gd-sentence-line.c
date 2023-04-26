@@ -66,17 +66,16 @@ int main(int argc, char *argv[]) {
              "https://simplytranslate.pussthecat.org/"
              "?engine=google&text=%s&sl=auto&tl=en",
              encoded_text);
-    printf("<span class=\"line\"><a href=\"%s\">🌐</a></span>\n", url);
+    printf("<span><a class=\"line\" href=\"%s\">🌐</a></span>\n", url);
     curl_free(encoded_text);
     curl_easy_cleanup(curl);
   }
 
   printf("<style>\n");
-  printf(" .line {   word-spacing: normal;    letter-spacing: normal;    "
-         "display: inline-block; }\n");
+  printf(" .line { text-decoration: none; }\n");
   printf(".gd-marisa {\n");
   printf(" font-size: 2rem; display: inline-block;\n");
-  printf(" margin: 0.05em 0;\n");
+  printf(" margin: 0.05em 0.2em 0.05em 0.05em;\n");
   printf(" color: #1268c3;\n");
   printf("}\n");
   printf(".gd-marisa a {\n");
