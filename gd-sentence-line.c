@@ -5,7 +5,7 @@
 #include <string.h>
 
 void print_usage(char *program_name) {
-  printf("Usage: %s [--difficulty] %%GDSEARCH%% %%GDWORD%%\n", program_name);
+  printf("Usage: %s [--translate] [--difficulty] %%GDSEARCH%% %%GDWORD%%\n", program_name);
 }
 
 int calculate_difficulty(char *word) {
@@ -26,18 +26,31 @@ int calculate_difficulty(char *word) {
 }
 
 int main(int argc, char *argv[]) {
-  int use_difficulty_colors = 0;
+  int use_difficulty_colors = 0, use_simplytranslate = 0;
   if (argc < 3) {
     print_usage(argv[0]);
     return 1;
-  } else if (argc == 4 && strcmp(argv[1], "--difficulty") == 0) {
-    use_difficulty_colors = 1;
-    argv++;
   }
-  printf("<span class=\"gd-marisa\">\n");
 
-  char *input_copy = strdup(argv[1]);
+  int cur_arg = 1;
+  // Parse flags
+  while (cur_arg < argc - 2) {
+    if (strcmp(argv[cur_arg], "--translate") == 0) {
+      use_simplytranslate = 1;
+      cur_arg++;
+    } else if (strcmp(argv[cur_arg], "--difficulty") == 0) {
+      use_difficulty_colors = 1;
+      cur_arg++;
+    } else {
+      printf("Unknown flag: %s\n", argv[cur_arg]);
+      print_usage(argv[0]);
+      return 1;
+    }
+  }
+
+  char *input_copy = strdup(argv[cur_arg]);
   char *word = strtok(input_copy, " ");
+  printf("<span class=\"gd-marisa\">\n");
   while (word != NULL) {
     char *bg_color = "";
     if (use_difficulty_colors) {
@@ -51,24 +64,26 @@ int main(int argc, char *argv[]) {
       }
     }
     printf("<a href=\"bword:%s\"%s %s>%s</a> ", word,
-           strcmp(word, argv[2]) == 0 ? " class=\"active\"" : "", bg_color,
+           strcmp(word, argv[cur_arg + 1]) == 0 ? " class=\"active\"" : "", bg_color,
            word);
     word = strtok(NULL, " ");
   }
   free(input_copy);
   printf("</span>\n");
 
-  CURL *curl = curl_easy_init();
-  if (curl) {
-    char *encoded_text = curl_easy_escape(curl, argv[1], 0);
-    char url[1024];
-    snprintf(url, sizeof(url),
-             "https://simplytranslate.pussthecat.org/"
-             "?engine=google&text=%s&sl=auto&tl=en",
-             encoded_text);
-    printf("<span><a class=\"line\" href=\"%s\">🌐</a></span>\n", url);
-    curl_free(encoded_text);
-    curl_easy_cleanup(curl);
+  if (use_simplytranslate) {
+    CURL *curl = curl_easy_init();
+    if (curl) {
+      char *encoded_text = curl_easy_escape(curl, argv[cur_arg], 0);
+      char url[1024];
+      snprintf(url, sizeof(url),
+               "https://simplytranslate.pussthecat.org/"
+               "?engine=google&text=%s&sl=auto&tl=en",
+               encoded_text);
+      printf("<span><a class=\"line\" href=\"%s\">🌐</a></span>\n", url);
+      curl_free(encoded_text);
+      curl_easy_cleanup(curl);
+    }
   }
 
   printf("<style>\n");
