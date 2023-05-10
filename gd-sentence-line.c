@@ -5,7 +5,8 @@
 #include <string.h>
 
 void print_usage(char *program_name) {
-  printf("Usage: %s [--translate] [--difficulty] %%GDSEARCH%% %%GDWORD%%\n", program_name);
+  printf("Usage: %s [--translate] [--difficulty] %%GDSEARCH%% %%GDWORD%%\n",
+         program_name);
 }
 
 int calculate_difficulty(char *word) {
@@ -23,6 +24,20 @@ int calculate_difficulty(char *word) {
   } else {
     return 3; // hard
   }
+}
+
+char *remove_punctuations(char *s) {
+  int i, j = 0;
+  char *result = (char *)malloc(strlen(s) + 1);
+
+  for (i = 0; s[i]; i++) {
+    if (!ispunct(s[i])) {
+      result[j++] = s[i];
+    }
+  }
+  result[j] = '\0';
+
+  return result;
 }
 
 int main(int argc, char *argv[]) {
@@ -52,6 +67,7 @@ int main(int argc, char *argv[]) {
   char *word = strtok(input_copy, " ");
   printf("<span class=\"gd-marisa\">\n");
   while (word != NULL) {
+    char *clean_word = remove_punctuations(word);
     char *bg_color = "";
     if (use_difficulty_colors) {
       int difficulty = calculate_difficulty(word);
@@ -63,10 +79,11 @@ int main(int argc, char *argv[]) {
         /* bg_color = "style=\"background-color: #ccffcc;\""; */
       }
     }
-    printf("<a href=\"bword:%s\"%s %s>%s</a> ", word,
-           strcmp(word, argv[cur_arg + 1]) == 0 ? " class=\"active\"" : "", bg_color,
+    printf("<a href=\"bword:%s\"%s %s>%s</a> ", clean_word,
+           strcmp(clean_word, argv[cur_arg + 1]) == 0 ? " class=\"active\"" : "", bg_color,
            word);
     word = strtok(NULL, " ");
+    free(clean_word);
   }
   free(input_copy);
   printf("</span>\n");
